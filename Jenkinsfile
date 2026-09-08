@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         IMAGE_NAME = 'notas-api'
-        IMAGE_TAG = ''
     }
 
     stages {
@@ -14,11 +13,11 @@ pipeline {
                         .toLowerCase()
                         .replaceAll('[^a-z0-9_.-]', '-')
 
-                    env.IMAGE_TAG = "${safeBranch}-${env.BUILD_NUMBER}"
+                    env.DOCKER_IMAGE_TAG = safeBranch + '-' + env.BUILD_NUMBER
 
                     echo "Rama: ${env.BRANCH_NAME}"
                     echo "Commit: ${env.GIT_COMMIT}"
-                    echo "Imagen: ${env.IMAGE_NAME}:${env.IMAGE_TAG}"
+                    echo "Imagen: ${env.IMAGE_NAME}:${env.DOCKER_IMAGE_TAG}"
                 }
             }
         }
@@ -60,9 +59,9 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        sh "docker build -t ${env.IMAGE_NAME}:${env.IMAGE_TAG} ."
+                        sh "docker build -t ${env.IMAGE_NAME}:${env.DOCKER_IMAGE_TAG} ."
                     } else {
-                        bat "docker build -t ${env.IMAGE_NAME}:${env.IMAGE_TAG} ."
+                        bat "docker build -t ${env.IMAGE_NAME}:${env.DOCKER_IMAGE_TAG} ."
                     }
                 }
             }
@@ -71,7 +70,7 @@ pipeline {
 
     post {
         success {
-            echo "Pipeline exitoso. Imagen creada: ${env.IMAGE_NAME}:${env.IMAGE_TAG}"
+            echo "Pipeline exitoso. Imagen creada: ${env.IMAGE_NAME}:${env.DOCKER_IMAGE_TAG}"
         }
         failure {
             echo 'El pipeline falló; revisá la etapa y los resultados de pytest.'
