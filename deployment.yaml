@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: notas-api
+  namespace: notas
+  labels:
+    app: notas-api
+
+spec:
+  replicas: 3
+
+  selector:
+    matchLabels:
+      app: notas-api
+
+  template:
+    metadata:
+      labels:
+        app: notas-api
+
+    spec:
+      containers:
+        - name: notas-api
+          image: notas-api:v2
+          imagePullPolicy: Never
+
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+
+          env:
+            - name: NOTES_FILE
+              value: /data/notes.json
+
+            - name: API_TITLE
+              valueFrom:
+                configMapKeyRef:
+                  name: notas-config
+                  key: API_TITLE
+
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+
+          volumeMounts:
+            - name: notas-storage
+              mountPath: /data
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 3
+            periodSeconds: 5
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+      volumes:
+        - name: notas-storage
+          persistentVolumeClaim:
+            claimName: notas-pvc
