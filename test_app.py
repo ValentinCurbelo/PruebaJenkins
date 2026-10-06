@@ -22,6 +22,7 @@ def test_health_check_muestra_version_e_instancia(client):
     assert response.headers["content-type"].startswith("text/html")
     assert "Versión local" in response.text
     assert "ejecucion-local" in response.text
+    assert "Crear nota" in response.text
 
 
 def test_lista_inicialmente_vacia(client):
@@ -107,3 +108,38 @@ def test_histograma_registra_endpoint(client):
         "http_request_duration_seconds_count", labels
     )
     assert count_after == count_before + 1
+
+
+def test_edita_una_nota_existente(client):
+    client.post("/add/1", json={"text": "Texto original"})
+
+    response = client.put("/edit/1", json={"text": "Texto editado"})
+
+    assert response.status_code == 200
+    assert response.json() == {"id": "1", "text": "Texto editado"}
+    assert client.get("/list").json() == [{"id": "1", "text": "Texto editado"}]
+
+
+def test_editar_nota_inexistente_devuelve_404(client):
+    response = client.put("/edit/no-existe", json={"text": "Texto"})
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "La nota no existe"}
+
+
+def test_elimina_una_nota_y_actualiza_medidor(client):
+    client.post("/add/1", json={"text": "Temporal"})
+
+    response = client.delete("/delete/1")
+
+    assert response.status_code == 200
+    assert response.json() == {"id": "1", "message": "Nota eliminada"}
+    assert client.get("/list").json() == []
+    assert app.NOTES_TOTAL._value.get() == 0
+
+
+def test_eliminar_nota_inexistente_devuelve_404(client):
+    response = client.delete("/delete/no-existe")
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "La nota no existe"}

@@ -2,6 +2,20 @@
 
 Esta rama se utiliza para probar el pipeline multibranch.
 
+## Uso de la aplicación
+
+Con el contenedor en ejecución, abre `http://localhost:8000`. Desde esa
+pantalla se pueden crear, editar y eliminar notas. Los datos se guardan en el
+volumen Docker `notas-data`.
+
+La API también ofrece estas rutas:
+
+- `GET /list`: lista todas las notas.
+- `POST /add/{id}`: crea una nota.
+- `PUT /edit/{id}`: cambia el texto de una nota.
+- `DELETE /delete/{id}`: elimina una nota.
+- `GET /docs`: documentación interactiva de FastAPI.
+
 ## Métricas y monitoreo
 
 La API expone métricas compatibles con Prometheus en `GET /metrics`:
