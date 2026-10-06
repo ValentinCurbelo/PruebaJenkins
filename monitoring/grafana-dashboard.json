@@ -1,0 +1,135 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "description": "Estado, uso y rendimiento de la API de notas.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {"type": "prometheus", "uid": "ag0g7qpk8rym8a"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "fixedColor", "fixedColor": "blue"},
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": null}]},
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+      "id": 1,
+      "options": {"colorMode": "background", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "showPercentChange": false, "textMode": "auto", "wideLayout": true},
+      "targets": [{"editorMode": "code", "expr": "notes_total", "instant": true, "legendFormat": "Notas", "range": false, "refId": "A"}],
+      "title": "Notas guardadas ahora",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "ag0g7qpk8rym8a"},
+      "fieldConfig": {
+        "defaults": {"color": {"mode": "fixedColor", "fixedColor": "green"}, "decimals": 0, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}, "unit": "short"},
+        "overrides": []
+      },
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
+      "id": 2,
+      "options": {"colorMode": "background", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "showPercentChange": false, "textMode": "auto", "wideLayout": true},
+      "targets": [{"editorMode": "code", "expr": "notes_created_total", "instant": true, "legendFormat": "Creadas", "range": false, "refId": "A"}],
+      "title": "Notas creadas (desde el arranque)",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "ag0g7qpk8rym8a"},
+      "fieldConfig": {
+        "defaults": {"color": {"mode": "fixedColor", "fixedColor": "purple"}, "decimals": 0, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "purple", "value": null}]}, "unit": "short"},
+        "overrides": []
+      },
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
+      "id": 3,
+      "options": {"colorMode": "background", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "showPercentChange": false, "textMode": "auto", "wideLayout": true},
+      "targets": [{"editorMode": "code", "expr": "sum(increase(http_request_duration_seconds_count{endpoint!=\"/metrics\"}[$__range]))", "instant": true, "legendFormat": "Peticiones", "range": false, "refId": "A"}],
+      "title": "Peticiones en el período",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "ag0g7qpk8rym8a"},
+      "fieldConfig": {
+        "defaults": {"color": {"mode": "thresholds"}, "decimals": 0, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}, "unit": "short"},
+        "overrides": []
+      },
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
+      "id": 4,
+      "options": {"colorMode": "background", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "showPercentChange": false, "textMode": "auto", "wideLayout": true},
+      "targets": [{"editorMode": "code", "expr": "sum(increase(http_request_duration_seconds_count{endpoint!=\"/metrics\",status_code=~\"4..|5..\"}[$__range])) or vector(0)", "instant": true, "legendFormat": "Errores", "range": false, "refId": "A"}],
+      "title": "Respuestas con error",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "ag0g7qpk8rym8a"},
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto", "drawStyle": "line", "fillOpacity": 18, "gradientMode": "none", "hideFrom": {"legend": false, "tooltip": false, "viz": false}, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false, "stacking": {"group": "A", "mode": "none"}, "thresholdsStyle": {"mode": "off"}}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}, "unit": "reqps"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+      "id": 5,
+      "options": {"legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+      "targets": [{"editorMode": "code", "expr": "sum by (method, endpoint) (rate(http_request_duration_seconds_count{endpoint!=\"/metrics\"}[1m]))", "legendFormat": "{{method}} {{endpoint}}", "range": true, "refId": "A"}],
+      "title": "Tráfico por endpoint",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "ag0g7qpk8rym8a"},
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto", "drawStyle": "line", "fillOpacity": 12, "gradientMode": "none", "hideFrom": {"legend": false, "tooltip": false, "viz": false}, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "never", "spanNulls": false, "stacking": {"group": "A", "mode": "none"}, "thresholdsStyle": {"mode": "off"}}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 0.5}]}, "unit": "s"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+      "id": 6,
+      "options": {"legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+      "targets": [{"editorMode": "code", "expr": "histogram_quantile(0.95, sum by (le, endpoint) (rate(http_request_duration_seconds_bucket{endpoint!=\"/metrics\"}[5m])))", "legendFormat": "p95 {{endpoint}}", "range": true, "refId": "A"}],
+      "title": "Latencia p95 por endpoint",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "ag0g7qpk8rym8a"},
+      "fieldConfig": {"defaults": {"color": {"mode": "continuous-GrYlRd"}, "decimals": 0, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}, "unit": "short"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12},
+      "id": 7,
+      "options": {"displayMode": "gradient", "legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": false}, "maxVizHeight": 300, "minVizHeight": 16, "minVizWidth": 8, "namePlacement": "auto", "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "showUnfilled": true, "sizing": "auto", "text": {}, "valueMode": "color"},
+      "targets": [{"editorMode": "code", "expr": "sum by (method, endpoint) (increase(http_request_duration_seconds_count{endpoint!=\"/metrics\"}[$__range]))", "instant": true, "legendFormat": "{{method}} {{endpoint}}", "range": false, "refId": "A"}],
+      "title": "Cantidad de llamadas por endpoint",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "ag0g7qpk8rym8a"},
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "decimals": 0, "mappings": [], "unit": "short"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12},
+      "id": 8,
+      "options": {"displayLabels": ["name", "percent"], "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "values": ["value", "percent"]}, "pieType": "donut", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "tooltip": {"hideZeros": false, "mode": "single", "sort": "none"}},
+      "targets": [{"editorMode": "code", "expr": "sum by (status_code) (increase(http_request_duration_seconds_count{endpoint!=\"/metrics\"}[$__range]))", "instant": true, "legendFormat": "HTTP {{status_code}}", "range": false, "refId": "A"}],
+      "title": "Distribución de códigos HTTP",
+      "type": "piechart"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "ag0g7qpk8rym8a"},
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "Notas", "axisPlacement": "auto", "drawStyle": "line", "fillOpacity": 20, "gradientMode": "none", "hideFrom": {"legend": false, "tooltip": false, "viz": false}, "lineInterpolation": "stepAfter", "lineWidth": 2, "pointSize": 5, "scaleDistribution": {"type": "linear"}, "showPoints": "auto", "spanNulls": true, "stacking": {"group": "A", "mode": "none"}, "thresholdsStyle": {"mode": "off"}}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}, "unit": "short"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 20},
+      "id": 9,
+      "options": {"legend": {"calcs": ["lastNotNull", "min", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"hideZeros": false, "mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"editorMode": "code", "expr": "notes_total", "legendFormat": "Notas guardadas", "range": true, "refId": "A"},
+        {"editorMode": "code", "expr": "notes_created_total", "legendFormat": "Notas creadas acumuladas", "range": true, "refId": "B"}
+      ],
+      "title": "Evolución de las notas",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 41,
+  "tags": ["notas", "fastapi", "prometheus"],
+  "templating": {"list": []},
+  "time": {"from": "now-30m", "to": "now"},
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "API de Notas - Observabilidad",
+  "uid": "notas-api-monitoring",
+  "version": 1,
+  "weekStart": ""
+}

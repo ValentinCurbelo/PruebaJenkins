@@ -25,4 +25,8 @@ La API expone métricas compatibles con Prometheus en `GET /metrics`:
 - `http_request_duration_seconds`: histograma de duración y llamadas por endpoint.
 
 Prometheus consulta `notas-api:8000/metrics` cada 15 segundos. El dashboard
-`Monitoreo API de notas` de Grafana muestra estas tres métricas.
+`API de Notas - Observabilidad` está disponible en
+`http://localhost:3000/d/notas-api-monitoring/api-de-notas-observabilidad`.
+Incluye cantidades de notas, tráfico, errores, latencia p95, llamadas por
+endpoint, códigos HTTP y evolución temporal. Su definición reproducible está
+en `monitoring/grafana-dashboard.json`.
