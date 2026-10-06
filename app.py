@@ -1,10 +1,12 @@
 import json
 import os
+from time import perf_counter
 from pathlib import Path
 from threading import Lock
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import HTMLResponse, Response
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, Histogram, generate_latest
 from pydantic import BaseModel, Field
 
 
@@ -17,6 +19,20 @@ app = FastAPI(title=f"{API_TITLE} - {POD_NAME}")
 
 NOTES_FILE = Path(os.getenv("NOTES_FILE", "data/notes.json"))
 _file_lock = Lock()
+
+NOTES_CREATED = Counter(
+    "notes_created",
+    "Cantidad total de notas creadas durante la ejecución",
+)
+NOTES_TOTAL = Gauge(
+    "notes_total",
+    "Cantidad actual de notas almacenadas",
+)
+HTTP_REQUEST_DURATION = Histogram(
+    "http_request_duration_seconds",
+    "Duración de las llamadas HTTP por endpoint",
+    ["method", "endpoint", "status_code"],
+)
 
 
 class NoteInput(BaseModel):
@@ -46,6 +62,28 @@ def _write_notes(notes: dict[str, str]) -> None:
     temporary_file.replace(NOTES_FILE)
 
 
+NOTES_TOTAL.set(len(_read_notes()))
+
+
+@app.middleware("http")
+async def record_request_metrics(request: Request, call_next):
+    started_at = perf_counter()
+    status_code = "500"
+
+    try:
+        response = await call_next(request)
+        status_code = str(response.status_code)
+        return response
+    finally:
+        route = request.scope.get("route")
+        endpoint = getattr(route, "path", "unmatched")
+        HTTP_REQUEST_DURATION.labels(
+            method=request.method,
+            endpoint=endpoint,
+            status_code=status_code,
+        ).observe(perf_counter() - started_at)
+
+
 @app.get("/", response_class=HTMLResponse)
 def health_check() -> str:
     return f"""
@@ -66,6 +104,11 @@ def health_check() -> str:
     """
 
 
+@app.get("/metrics", include_in_schema=False)
+def metrics() -> Response:
+    return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
+
+
 @app.post("/add/{note_id}", status_code=201)
 def add_note(note_id: str, note: NoteInput) -> dict[str, str]:
     with _file_lock:
@@ -75,6 +118,8 @@ def add_note(note_id: str, note: NoteInput) -> dict[str, str]:
 
         notes[note_id] = note.text
         _write_notes(notes)
+        NOTES_CREATED.inc()
+        NOTES_TOTAL.set(len(notes))
 
     return {"id": note_id, "text": note.text}
 
@@ -83,4 +128,5 @@ def add_note(note_id: str, note: NoteInput) -> dict[str, str]:
 def list_notes() -> list[dict[str, str]]:
     with _file_lock:
         notes = _read_notes()
+        NOTES_TOTAL.set(len(notes))
     return [{"id": note_id, "text": text} for note_id, text in notes.items()]
